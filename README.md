@@ -105,7 +105,7 @@ Herdr 的每台机器各有自己的 server，插件的守护进程只给**自�
 | --- | --- | --- | --- |
 | `agents_panel` | 面板来源 | plugin | Agents 面板用谁的行：plugin = 本插件的样式和排序，herdr = Herdr 原生样式。很少改动，所以放在设置里而不是快捷键。 |
 | `order` | 排序方式 | active | Agents 面板的顺序：active = 按项目分组、最忙的在前、搁置的在后；recent = 不分组、按最近活动平铺；off = Herdr 原顺序。仅 agents_panel 为 plugin 时有效。 |
-| `reorder_workspaces` | 工作区重排 | 关 | 让这台机器上工作区本身的顺序跟随活跃度，最近有活动的排前面；排序方式为 off 时也生效，这样每台机器内部活跃的在前，机器顺序仍用 Herdr 原生的。注意：上方工作区列表也会随之移动。 |
+| `reorder_workspaces` | 工作区重排 | 关 | 让这台机器的工作区按活跃度排序，最近有活动的在前；排序方式为 off 时也生效。注意：上方工作区列表也会随之移动。 |
 | `variant` | 图标样式 | auto | 厂商 logo 和状态标记的显示方式：font = 图标字体，text = 普通 Unicode 字符，none = 不显示，auto = 自动（只有 Linux 能探测字体，其他系统按 text 处理）。 |
 | `done_hold` | 完成标记保留 | until_seen | “完成 ✓”标记保留多久：until_seen = 直到你聚焦到那个窗格；也可以选一个秒数，到时自动消失。 |
 | `blocked_hold` | 等待标记保留 | 开 | 开启：“等待回答 ?”一直保留到 agent 重新开始工作；关闭：只在 agent 实际处于等待时显示。 |
@@ -115,7 +115,7 @@ Herdr 的每台机器各有自己的 server，插件的守护进程只给**自�
 | `group_indent` | 分组缩进 | 2 | 仅 grouped 布局：成员在工作区标题下缩进几列；0 = 不缩进。 |
 | `group_gap` | 分组空行 | 关 | 仅 grouped 布局：不同工作区之间是否空一行，默认关闭（agent 之间紧贴）。 |
 | `layout` | 条目布局 | entry | entry = 每个 agent 自成一项（标题行 + 项目行），选中时只框住它自己；grouped = Radar 原样，工作区标题藏在组内第一项里。 |
-| `machine_rank` | 机器排序 | 0 | 仅排序方式为 active 或 recent 时有用：多台机器的 agent 放在一起时，这台机器排第几，数字小的在前。方向固定，从哪台看都一样；想要本机在前，请把排序方式设为 off。 |
+| `machine_rank` | 机器排序 | 0 | 仅排序方式为 active 或 recent 时有用：这台机器的 agent 排第几，数字小的在前，从哪台看都一样。想要本机在前，请把排序方式设为 off。 |
 | `agent_row_gap` | 条目间距 | 0 | 下半部分每两个 agent 条目之间空几行，默认 0 = 紧贴。空行画在条目外面，不会被选中框框住。 |
 | `title_wrap` | 标题最多行数 | 3 | 长标题最多换成几行，装不下的结尾用 … 表示；1 = 不换行（和 Herdr 原样一样，用省略号截断）。 |
 | `title_width` | 换行宽度 | 32 | 标题按多少列换行，默认 32，等于你现在的 sidebar_max_width。调整了侧边栏宽度后，把这里改成相应的列数。 |
