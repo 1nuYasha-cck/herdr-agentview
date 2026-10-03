@@ -155,8 +155,8 @@ const FIELDS = [
     step: 1,
     min: 0,
     max: 2,
-    fallback: 1,
-    help: '下半部分每两个 agent 条目之间空几行，0 = 紧贴。空行画在条目外面，不会被选中框框住。',
+    fallback: 0,
+    help: '下半部分每两个 agent 条目之间空几行，默认 0 = 紧贴。空行画在条目外面，不会被选中框框住。',
   },
   {
     key: 'title_wrap',

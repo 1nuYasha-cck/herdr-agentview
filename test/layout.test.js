@@ -181,5 +181,5 @@ test('the gap between agent entries is Herdr\'s row_gap, tagged so a change rege
   }
   config.agentRowGap = original;
   assert.equal(managed.blockRowGap('nothing'), null);
-  assert.equal(config.agentRowGap, 1, 'a gap of one row is the default');
+  assert.equal(config.agentRowGap, 0, 'there is no gap by default');
 });
