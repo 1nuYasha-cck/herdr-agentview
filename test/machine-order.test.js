@@ -50,35 +50,34 @@ const ENTRIES = [
 
 test('the machine key leads the sort, ahead of every activity key', () => {
   for (const mode of ['grouped', 'recent']) {
-    const spec = view.sortFor(mode, 0);
+    const spec = view.sortFor(mode);
     assert.equal(spec.sort[0].field.token, 'machine_key');
     assert.ok(spec.sort.length >= 2, 'the activity order is kept below it');
   }
-  assert.equal(view.sortFor('nope', 0), null);
+  assert.equal(view.sortFor('nope'), null);
 });
 
-test('the lowest rank sorts ascending, any other descending, so a machine puts itself first', () => {
-  assert.equal(view.sortFor('grouped', 0).sort[0].order, 'asc');
-  assert.equal(view.sortFor('grouped', 1).sort[0].order, 'desc');
-  assert.equal(view.sortFor('grouped', 3).sort[0].order, 'desc');
+test('the direction is fixed: the lowest rank first, whichever machine sets the view', () => {
+  // Herdr evaluates the view of the ACTIVE machine, and clicking a remote agent
+  // makes it active, so a direction relative to the machine reordered the list
+  // on every click. Every machine sets this same sort.
+  assert.equal(view.sortFor('grouped').sort[0].order, 'asc');
+  assert.equal(view.sortFor('recent').sort[0].order, 'asc');
+  assert.equal(view.sortFor.length, 1, 'sortFor takes no per-machine argument');
 });
 
-test('viewed from the machine at rank 0, its agents come first and the other machine follows', () => {
-  const names = sorted(ENTRIES, view.sortFor('grouped', 0)).map((e) => e.name);
+test('the list is the same whichever machine is active: lowest rank first, busiest first within', () => {
+  const names = sorted(ENTRIES, view.sortFor('grouped')).map((e) => e.name);
   assert.deepEqual(names.slice(0, 4).sort(), ['local busy', 'local maintain', 'local search', 'local skills']);
   assert.deepEqual(names.slice(4).sort(), ['macbook busy', 'macbook codex']);
   assert.equal(names[0], 'local busy', 'within a machine the busiest still leads');
   assert.equal(names[4], 'macbook busy');
-});
-
-test('viewed from the machine at rank 1, its own agents come first', () => {
-  const names = sorted(ENTRIES, view.sortFor('grouped', 1)).map((e) => e.name);
-  assert.deepEqual(names.slice(0, 2), ['macbook busy', 'macbook codex']);
-  assert.ok(names.slice(2).every((name) => name.startsWith('local')));
+  // The remote machine's own view is this same spec, so clicking its agent changes nothing.
+  assert.deepEqual(sorted(ENTRIES, view.sortFor('grouped')).map((e) => e.name), names);
 });
 
 test('a remote agent no longer lands between two local workspaces', () => {
-  const names = sorted(ENTRIES, view.sortFor('grouped', 0)).map((e) => e.name);
+  const names = sorted(ENTRIES, view.sortFor('grouped')).map((e) => e.name);
   const remote = names.findIndex((name) => name.startsWith('macbook'));
   assert.ok(names.slice(0, remote).every((name) => name.startsWith('local')));
   assert.ok(names.slice(remote).every((name) => name.startsWith('macbook')));
@@ -86,6 +85,6 @@ test('a remote agent no longer lands between two local workspaces', () => {
 
 test('a machine without the plugin publishes no key and goes after the ones that do', () => {
   const bare = { name: 'no plugin', tokens: {} };
-  const names = sorted([bare, ...ENTRIES], view.sortFor('grouped', 0)).map((e) => e.name);
+  const names = sorted([bare, ...ENTRIES], view.sortFor('grouped')).map((e) => e.name);
   assert.equal(names.at(-1), 'no plugin');
 });

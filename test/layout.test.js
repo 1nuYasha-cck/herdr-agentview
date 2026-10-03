@@ -183,3 +183,35 @@ test('the gap between agent entries is Herdr\'s row_gap, tagged so a change rege
   assert.equal(managed.blockRowGap('nothing'), null);
   assert.equal(config.agentRowGap, 0, 'there is no gap by default');
 });
+
+test('the machine row is the first row in the grouped layout too', () => {
+  const block = withLayout('grouped', () => managed.sidebarBlock('dark'));
+  const agents = block.slice(block.indexOf('[ui.sidebar.agents]'), block.indexOf('[ui.sidebar.agents.rows_by_agent]'));
+  assert.ok(agents.indexOf('token = "machine"') < agents.indexOf('$group_parent'));
+  assert.ok(agents.indexOf('token = "machine"') < agents.indexOf('$title_working'));
+  // The spacer is still the last row of the entry, below the Git row.
+  assert.ok(agents.lastIndexOf('"$gap"') > agents.lastIndexOf('$git_branch'));
+});
+
+test('a head entry\'s title loses the two columns Herdr indents a later row by', () => {
+  const saved = { titleWrap: config.titleWrap, titleWidth: config.titleWidth, titleMargin: config.titleMargin };
+  Object.assign(config, { titleWrap: 4, titleWidth: 35, titleMargin: 0 });
+  try {
+    const { displayWidth } = require('../lib/textwidth');
+    const long = 'refactor the authentication middleware so sessions survive a restart';
+    assert.equal(state.CONTINUATION_EXTRA, 2);
+    const member = state.titleLines(long, '⣾ ', 0);
+    const head = state.titleLines(long, '⣾ ', state.CONTINUATION_EXTRA);
+    // 35 columns, 10 of overhead, the 2-column spinner prefix and, for the head, 2 more.
+    assert.ok(displayWidth(member[0]) <= 35 - 10 - 2, member[0]);
+    assert.ok(displayWidth(head[0]) <= 35 - 10 - 2 - 2, head[0]);
+    assert.ok(displayWidth(head[0]) <= displayWidth(member[0]), 'the head wraps no later than a member');
+    // The tokens carry it: the flag changes where the first line breaks.
+    const line = { mark: '', split: '', logo: '', titlePrefix: '⣾ ' };
+    const asHead = state.stateTokens('working', line, long, null, { headTitle: true });
+    const asMember = state.stateTokens('working', line, long, null, { headTitle: false });
+    assert.ok(asHead.title_working.length <= asMember.title_working.length);
+  } finally {
+    Object.assign(config, saved);
+  }
+});

@@ -137,7 +137,7 @@ test('names from the two-cell version are cleared, not left on the pane', () => 
   }
 });
 
-test('the entry layout ends with a Git row of one coloured cell per kind', () => {
+test('both layouts end an entry with a Git row of one coloured cell per kind', () => {
   const palette = require('../lib/palette');
   const entry = withConfig({ layout: 'entry' }, () => managed.sidebarBlock('dark'));
   const colours = palette.stateFor('dark');
@@ -146,8 +146,10 @@ test('the entry layout ends with a Git row of one coloured cell per kind', () =>
   assert.equal(cellFor('git_worktree'), colours.gitWorktree);
   assert.notEqual(colours.gitBranch, colours.gitWorktree, 'the two kinds read apart');
   assert.doesNotMatch(entry, /git_branch_icon|git_branch_text/, 'no separate icon cell, so no separator');
+  // The grouped layout carries the Git row as well, after the title rows.
   const grouped = withConfig({ layout: 'grouped' }, () => managed.sidebarBlock('dark'));
-  assert.doesNotMatch(grouped, /\$git_branch/);
+  assert.match(grouped, /\$git_branch/);
+  assert.ok(grouped.indexOf('$git_branch') > grouped.indexOf('$title_working'));
 });
 
 test('the tab bar line carries the branch and, in a worktree, the repository', () => {
