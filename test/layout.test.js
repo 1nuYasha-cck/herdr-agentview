@@ -135,3 +135,36 @@ test('a step of the spinner changes only the tokens that move', () => {
   const delta = state.tokenDelta(two, one);
   assert.deepEqual(Object.keys(delta).sort(), ['space_a1_working', 'space_working_other']);
 });
+
+test('the machine name has a row of its own, apart from the title', () => {
+  for (const layout of ['entry', 'grouped']) {
+    const block = withLayout(layout, () => managed.sidebarBlock('dark'));
+    const agents = block.slice(block.indexOf('[ui.sidebar.agents]'), block.indexOf('[ui.sidebar.agents.rows_by_agent]'));
+    // Every top-level row of the default Agents row, as cell lists.
+    const body = agents.slice(agents.indexOf('rows = ['));
+    const rows = [];
+    let depth = 0;
+    let from = 0;
+    for (let i = body.indexOf('['); i < body.length; i += 1) {
+      if (body[i] === '[') {
+        if (depth === 1) from = i;
+        depth += 1;
+      } else if (body[i] === ']') {
+        depth -= 1;
+        if (depth === 1) rows.push(body.slice(from, i + 1));
+        if (depth === 0) break;
+      }
+    }
+    const withMachine = rows.filter((row) => row.includes('token = "machine"'));
+    assert.equal(withMachine.length, 1, `${layout}: one row carries the machine`);
+    assert.doesNotMatch(withMachine[0], /\$title|\$logo|\$project|\$git/, `${layout}: nothing else shares its row`);
+    const titleRow = rows.find((row) => row.includes('$title_working'));
+    assert.doesNotMatch(titleRow, /token = "machine"/, `${layout}: the title row keeps its width`);
+  }
+});
+
+test('in the entry layout the machine row is the last row', () => {
+  const block = withLayout('entry', () => managed.sidebarBlock('dark'));
+  const agents = block.slice(block.indexOf('[ui.sidebar.agents]'), block.indexOf('[ui.sidebar.agents.rows_by_agent]'));
+  assert.ok(agents.lastIndexOf('token = "machine"') > agents.lastIndexOf('$git_branch'));
+});
