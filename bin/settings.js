@@ -149,6 +149,16 @@ const FIELDS = [
     help: 'entry = 每个 agent 自成一项（标题行 + 项目行），选中时只框住它自己；grouped = Radar 原样，工作区标题藏在组内第一项里。',
   },
   {
+    key: 'machine_rank',
+    label: '机器排序',
+    kind: 'number',
+    step: 1,
+    min: 0,
+    max: 9,
+    fallback: 0,
+    help: '多台机器的 agent 放在一起时，这台机器排第几：数字小的在前，每台机器设不同的数。两台机器时，各自把自己放在最前面。改了之后会重启生效。',
+  },
+  {
     key: 'agent_row_gap',
     label: '条目间距',
     kind: 'number',
