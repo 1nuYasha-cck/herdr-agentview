@@ -149,6 +149,16 @@ const FIELDS = [
     help: 'entry = 每个 agent 自成一项（标题行 + 项目行），选中时只框住它自己；grouped = Radar 原样，工作区标题藏在组内第一项里。',
   },
   {
+    key: 'agent_row_gap',
+    label: '条目间距',
+    kind: 'number',
+    step: 1,
+    min: 0,
+    max: 2,
+    fallback: 1,
+    help: '下半部分每两个 agent 条目之间空几行，0 = 紧贴。空行画在条目外面，不会被选中框框住。',
+  },
+  {
     key: 'title_wrap',
     label: '标题最多行数',
     kind: 'number',
@@ -176,7 +186,7 @@ const FIELDS = [
     min: -10,
     max: 20,
     fallback: 0,
-    help: '微调换行位置：正数更早换行，负数更晚。如果标题右侧还是被省略号截断，就调大一点。',
+    help: '微调换行位置：正数更早换行，负数更晚。标题右侧还被省略号截断就调大。远程机器的标题多缩进 2 列，那台机器上建议设成 2。',
   },
   {
     key: 'git_row',

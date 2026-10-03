@@ -163,8 +163,23 @@ test('the machine name has a row of its own, apart from the title', () => {
   }
 });
 
-test('in the entry layout the machine row is the last row', () => {
+test('in the entry layout the machine row is the first row', () => {
   const block = withLayout('entry', () => managed.sidebarBlock('dark'));
   const agents = block.slice(block.indexOf('[ui.sidebar.agents]'), block.indexOf('[ui.sidebar.agents.rows_by_agent]'));
-  assert.ok(agents.lastIndexOf('token = "machine"') > agents.lastIndexOf('$git_branch'));
+  assert.ok(agents.indexOf('token = "machine"') < agents.indexOf('$title_working'));
+  assert.ok(agents.indexOf('token = "machine"') < agents.indexOf('$split_mark'));
+});
+
+test('the gap between agent entries is Herdr\'s row_gap, tagged so a change regenerates the block', () => {
+  const original = config.agentRowGap;
+  for (const gap of [0, 1, 2]) {
+    config.agentRowGap = gap;
+    const block = managed.sidebarBlock('dark');
+    const agents = block.slice(block.indexOf('[ui.sidebar.agents]'), block.indexOf('[ui.sidebar.agents.rows_by_agent]'));
+    assert.match(agents, new RegExp(`^row_gap = ${gap}$`, 'm'));
+    assert.equal(managed.blockRowGap(block), String(gap));
+  }
+  config.agentRowGap = original;
+  assert.equal(managed.blockRowGap('nothing'), null);
+  assert.equal(config.agentRowGap, 1, 'a gap of one row is the default');
 });
