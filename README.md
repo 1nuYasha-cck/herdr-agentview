@@ -111,7 +111,7 @@ Herdr 的每台机器各有自己的 server，插件的守护进程只给**自�
 | `activity_fresh_minutes` | “刚活跃”时长 | 15 | 一轮结束后的这段分钟数内，空闲的 agent 仍显示为“刚活跃”（浅绿色）。 |
 | `activity_stale_minutes` | “已搁置”时长 | 120 | 超过这么多分钟没有新一轮，空闲的 agent 会变灰变暗，并排到本组最后。 |
 | `group_indent` | 分组缩进 | 2 | 仅 grouped 布局：成员在工作区标题下缩进几列；0 = 不缩进。 |
-| `group_gap` | 分组空行 | 开 | 仅 grouped 布局：不同工作区之间是否空一行。 |
+| `group_gap` | 分组空行 | 关 | 仅 grouped 布局：不同工作区之间是否空一行，默认关闭（agent 之间紧贴）。 |
 | `layout` | 条目布局 | entry | entry = 每个 agent 自成一项（标题行 + 项目行），选中时只框住它自己；grouped = Radar 原样，工作区标题藏在组内第一项里。 |
 | `machine_rank` | 机器排序 | 0 | 多台机器的 agent 放在一起时，这台机器排第几：数字小的在前，每台机器设不同的数。不管从哪台机器看、点了哪台的 agent，顺序都一样。 |
 | `agent_row_gap` | 条目间距 | 0 | 下半部分每两个 agent 条目之间空几行，默认 0 = 紧贴。空行画在条目外面，不会被选中框框住。 |

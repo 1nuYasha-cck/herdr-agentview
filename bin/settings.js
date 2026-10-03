@@ -139,7 +139,13 @@ const FIELDS = [
     fallback: 2,
     help: '仅 grouped 布局：成员在工作区标题下缩进几列；0 = 不缩进。',
   },
-  { key: 'group_gap', label: '分组空行', kind: 'bool', fallback: true, help: '仅 grouped 布局：不同工作区之间是否空一行。', },
+  {
+    key: 'group_gap',
+    label: '分组空行',
+    kind: 'bool',
+    fallback: false,
+    help: '仅 grouped 布局：不同工作区之间是否空一行，默认关闭（agent 之间紧贴）。',
+  },
   {
     key: 'layout',
     label: '条目布局',

@@ -215,3 +215,7 @@ test('a head entry\'s title loses the two columns Herdr indents a later row by',
     Object.assign(config, saved);
   }
 });
+
+test('there is no blank row between groups unless group_gap is asked for', () => {
+  assert.equal(config.groupGap, false, 'the spacer after each group is off by default');
+});
