@@ -1,0 +1,137 @@
+'use strict';
+
+// The `entry` layout makes every agent a self-contained sidebar entry: a title
+// row and a project row, with no group header and no spacer riding on its
+// neighbours. Selecting an agent highlights all rows of its own entry, so any
+// row that belongs to another agent leaks into the selection.
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+const config = require('../lib/config');
+const managed = require('../lib/managed-config');
+const state = require('../lib/state');
+const herdr = require('../lib/herdr');
+
+function withLayout(layout, fn) {
+  const before = config.layout;
+  config.layout = layout;
+  try {
+    return fn();
+  } finally {
+    config.layout = before;
+  }
+}
+
+test('entry layout carries a project row and no group header or spacer', () => {
+  const block = withLayout('entry', () => managed.sidebarBlock('dark'));
+  assert.match(block, /# layout: entry/);
+  assert.match(block, /"\$project"/);
+  assert.match(block, /"\$project_stale"/);
+  assert.doesNotMatch(block, /"\$group"/);
+  assert.doesNotMatch(block, /"\$group_parent"/);
+  assert.doesNotMatch(block, /"\$gap"/);
+});
+
+test('grouped layout is radar\'s: header rows and a spacer, no project row', () => {
+  const block = withLayout('grouped', () => managed.sidebarBlock('dark'));
+  assert.match(block, /# layout: grouped/);
+  assert.match(block, /"\$group"/);
+  assert.match(block, /"\$gap"/);
+  assert.doesNotMatch(block, /"\$project"/);
+});
+
+test('blockLayout reads the tag back', () => {
+  const block = withLayout('entry', () => managed.sidebarBlock('light'));
+  assert.equal(managed.blockLayout(block), 'entry');
+  assert.equal(managed.blockLayout('nothing here'), null);
+});
+
+test('the Spaces list gets one row per agent slot and an overflow row', () => {
+  const block = managed.sidebarBlock('dark');
+  const spaces = block.slice(block.indexOf('[ui.sidebar.spaces]'));
+  for (let slot = 1; slot <= config.spaceAgents; slot += 1) {
+    assert.match(spaces, new RegExp(`"\\$space_a${slot}_logo"`));
+    assert.match(spaces, new RegExp(`"\\$space_a${slot}_working"`));
+  }
+  assert.match(spaces, /"\$space_more"/);
+});
+
+test('spaceAgentTokens lists every agent, most urgent first, with its own state', () => {
+  const agents = [
+    { display: 'idle', name: 'codex', title: 'parked task' },
+    { display: 'working', name: 'claude', title: 'fix the login page' },
+    { display: 'blocked', name: 'claude', title: 'which env file?' },
+  ];
+  const out = state.spaceAgentTokens(agents);
+  assert.match(out.space_a1_blocked, /which env file\?$/);
+  assert.match(out.space_a2_working, /fix the login page$/);
+  assert.match(out.space_a3_idle, /parked task$/);
+  assert.equal(out.space_a1_working, null, 'only the agent\'s own state token is set');
+  assert.equal(out.space_a4_idle, null);
+  assert.equal(out.space_more, null);
+});
+
+test('more agents than slots are counted, not dropped silently', () => {
+  const agents = Array.from({ length: 7 }, (_, i) => ({ display: 'idle', name: 'codex', title: `t${i}` }));
+  const out = state.spaceAgentTokens(agents, 4);
+  assert.equal(out.space_more, '+3');
+  assert.ok(out.space_a4_idle);
+  assert.equal(out.space_a5_idle, undefined);
+});
+
+test('every idle tier shares the one idle slot token', () => {
+  const out = state.spaceAgentTokens([
+    { display: 'idle_fresh', name: 'codex', title: 'a' },
+    { display: 'idle_stale', name: 'codex', title: 'b' },
+  ]);
+  assert.ok(out.space_a1_idle);
+  assert.ok(out.space_a2_idle);
+});
+
+test('writeProjects labels every entry and fades a stale workspace', async (t) => {
+  const written = [];
+  t.mock.method(herdr, 'reportMetadataAsync', async (pane, _source, tokens) => {
+    written.push([pane, tokens]);
+    return true;
+  });
+  const entries = [
+    { pane: 'p1', workspace: 'w1' },
+    { pane: 'p2', workspace: 'w1' },
+    { pane: 'p3', workspace: 'w2' },
+  ];
+  const labels = new Map([
+    ['w1', 'web'],
+    ['w2', 'api'],
+  ]);
+  const result = await state.writeProjects('plugin:x', entries, labels, new Set(['w2']));
+  assert.equal(result.ok, true);
+  const byPane = Object.fromEntries(written);
+  assert.equal(byPane.p1.project, 'web');
+  assert.equal(byPane.p2.project, 'web', 'every member carries the project, not only the first');
+  assert.equal(byPane.p3.project, null);
+  assert.equal(byPane.p3.project_stale, 'api');
+  assert.equal(byPane.p1.group, null, 'group furniture from the other layout is cleared');
+});
+
+test('a working agent turns the spinner in the Spaces row, a blocked one pulses', () => {
+  const config = require('../lib/config');
+  const frames = new Set([0, 1, 2, 3].map((step) => state.spaceLead('working', step)));
+  assert.ok(frames.size > 1, 'the working mark must change from step to step');
+  for (const frame of frames) assert.ok(config.FRAMES.includes(frame));
+  assert.equal(state.spaceLead('idle', 0), state.spaceLead('idle', 5), 'an idle mark does not move');
+  const a = state.spaceAgentTokens([{ display: 'working', name: 'claude', title: 'x' }], 4, 0);
+  const b = state.spaceAgentTokens([{ display: 'working', name: 'claude', title: 'x' }], 4, 1);
+  assert.notEqual(a.space_a1_working, b.space_a1_working);
+});
+
+test('a step of the spinner changes only the tokens that move', () => {
+  const agents = [
+    { display: 'working', name: 'claude', title: 'fix it' },
+    { display: 'idle', name: 'codex', title: 'parked' },
+  ];
+  const one = state.spaceTokenSet('space_working_other', state.spaceLead('working', 0), state.spaceAgentTokens(agents, 4, 0), 'web');
+  const two = state.spaceTokenSet('space_working_other', state.spaceLead('working', 1), state.spaceAgentTokens(agents, 4, 1), 'web');
+  const delta = state.tokenDelta(two, one);
+  assert.deepEqual(Object.keys(delta).sort(), ['space_a1_working', 'space_working_other']);
+});

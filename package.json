@@ -1,0 +1,20 @@
+{
+  "name": "herdr-agentview",
+  "version": "0.2.0",
+  "description": "Vendor logos, lifecycle-state glyphs, workspace grouping and a path tab-bar for the Herdr sidebar.",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node tools/check.js",
+    "test": "node --test",
+    "prove": "node tools/prove-checks.js",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
+}
