@@ -80,7 +80,7 @@ const FIELDS = [
     label: '工作区重排',
     kind: 'bool',
     fallback: false,
-    help: '让 Herdr 的工作区编号跟随活跃度顺序，这样 prefix+shift+1..9 和面板顺序一致。注意：这会改变全局的工作区顺序。',
+    help: '让这台机器上工作区本身的顺序跟随活跃度，最近有活动的排前面；排序方式为 off 时也生效，这样每台机器内部活跃的在前，机器顺序仍用 Herdr 原生的。注意：上方工作区列表也会随之移动。',
   },
   {
     key: 'variant',
@@ -162,7 +162,7 @@ const FIELDS = [
     min: 0,
     max: 9,
     fallback: 0,
-    help: '多台机器的 agent 放在一起时，这台机器排第几：数字小的在前，每台机器设不同的数。不管从哪台机器看、点了哪台的 agent，顺序都一样。',
+    help: '仅排序方式为 active 或 recent 时有用：多台机器的 agent 放在一起时，这台机器排第几，数字小的在前。方向固定，从哪台看都一样；想要本机在前，请把排序方式设为 off。',
   },
   {
     key: 'agent_row_gap',
